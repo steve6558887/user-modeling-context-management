@@ -1,3 +1,5 @@
+[中文](./README.md) | English
+
 # User Modeling & Global Context Management
 
 **Give LLMs a continuously evolving user model + global context management. More effective than giving it memory.**

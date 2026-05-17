@@ -1,3 +1,5 @@
+[English](./README_EN.md) | 中文
+
 # User Modeling & Global Context Management
 
 **给 LLM 一个持续更新的用户模型 + 全局上下文管理，比给它记忆更有效。**
