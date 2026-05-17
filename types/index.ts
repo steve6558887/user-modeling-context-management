@@ -42,16 +42,6 @@ export interface MemoryCapsulesDirectResponse {
 // 检索
 // ============================================================
 
-export interface MemorySearchRequest {
-  user_id: string;
-  character_id?: string;
-  query_text: string;
-  query_vector?: number[];
-  entity_keywords?: string[];
-  match_count?: number;
-  match_threshold?: number;
-}
-
 export interface MemorySearchResult {
   id: string;
   capsule_id: string;
@@ -71,13 +61,6 @@ export interface MemorySearchResult {
   final_score?: number;
   created_at?: string;
   event_timestamp?: string;
-}
-
-export interface MemorySearchResponse {
-  success: boolean;
-  results: MemorySearchResult[];
-  total_count: number;
-  error?: string;
 }
 
 // ============================================================
