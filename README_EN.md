@@ -100,6 +100,12 @@ The user profile sits at Layer 1 (the first static block after the System Prompt
 
 The reasoning: the LLM needs a complete user model to make good judgments. Full injection also eliminates the need for an intent recognition layer and multi-step API calls. It's also more cache-friendly.
 
+### 5. Dual-Layer Time Window: 3-Month Trajectory + 2-Day State
+
+The user profile covers two time scales: `current_status` captures a ~3-month trajectory, and `recent activity` covers the last ~2 days.
+
+These two layers serve a key purpose: when the user expresses thoughts and feelings without any contextual preamble, the LLM can rely on both layers to understand *why the user is saying this now* — no need for the user to explain the background from scratch every time. It also gives the model a global perspective, enabling it to see the real concerns behind the user's literal prompt.
+
 ## Dependencies
 
 - **DeepSeek API** — capsule extraction (flash) + profile generation (pro)
