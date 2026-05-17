@@ -97,7 +97,7 @@ export async function hybridSearch(
   // 4. 合并 & 排序
   const allResults: MemorySearchResult[] = [];
 
-  const merge = (data: Array<Record<string, unknown>> | null, type: string) => {
+  const merge = (data: Array<Record<string, unknown>> | null) => {
     if (!data || !Array.isArray(data)) return;
     for (const item of data) {
       allResults.push({
@@ -107,8 +107,8 @@ export async function hybridSearch(
     }
   };
 
-  if (!expResult.error) merge(expResult.data, 'user_experience');
-  if (!intResult.error) merge(intResult.data, 'user_internal_info');
+  if (!expResult.error) merge(expResult.data);
+  if (!intResult.error) merge(intResult.data);
 
   // 按 final_score 降序
   allResults.sort(

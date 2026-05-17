@@ -95,14 +95,6 @@ export interface UserProfile {
   updated_at: string;
 }
 
-export interface UserTraits {
-  user_id: string;
-  generated_at: string;
-  raw_content: string;
-  pattern_layer?: string;
-  capsule_count: number;
-}
-
 // ============================================================
 // 配置
 // ============================================================

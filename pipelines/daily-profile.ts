@@ -10,7 +10,7 @@
  * 模型:     DeepSeek Pro（默认 deepseek-v4-pro）
  */
 
-import type { PipelineConfig, UserProfile } from '../types';
+import { callDeepSeek } from './llm-client';
 
 // ============================================================
 // Prompt 模板
@@ -76,7 +76,7 @@ export interface DailyProfileOutput {
   factLayer: string;
   projectStatus: string;
   currentStatus: string;
-  rawLlvmOutput: string;
+  rawLlmOutput: string;
 }
 
 // ============================================================
@@ -125,50 +125,11 @@ function buildHistoryContent(
 }
 
 // ============================================================
-// LLM 调用
-// ============================================================
-
-async function callDeepSeek(
-  prompt: string,
-  apiKey: string,
-  model: string,
-): Promise<string | null> {
-  try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        stream: false,
-        max_tokens: 8000,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`[daily-profile] API error ${response.status}`);
-      return null;
-    }
-
-    const data = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    return data.choices?.[0]?.message?.content || null;
-  } catch (error) {
-    console.error('[daily-profile] API call failed:', error);
-    return null;
-  }
-}
-
-// ============================================================
 // 标签解析
 // ============================================================
 
 function extractTag(content: string, tag: string): string {
-  // 支持 <tag> 和 <tag layer> 两种写法
+  // 支持 <tag> 和 <tag layer> 两种写法（LLM 有时输出带空格的变体）
   const patterns = [
     new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, 'i'),
     new RegExp(`<${tag.replace('_', ' ')}>([\\s\\S]*?)<\\/${tag.replace('_', ' ')}>`, 'i'),
@@ -215,11 +176,7 @@ export async function generateDailyProfile(
     .replace('{PROFILE}', previousRawContent || '无历史画像（首次生成）')
     .replace('{PLUS}', memoryPlus || '无记忆补充');
 
-  const llmOutput = await callDeepSeek(prompt, apiKey, model);
-
-  if (!llmOutput) {
-    throw new Error('[daily-profile] LLM call returned empty');
-  }
+  const llmOutput = await callDeepSeek(prompt, apiKey, model, { maxTokens: 8000 });
 
   const factLayer = extractTag(llmOutput, 'fact_layer') || llmOutput;
   const projectStatus = extractTag(llmOutput, 'project_status');
@@ -233,6 +190,6 @@ export async function generateDailyProfile(
     factLayer,
     projectStatus,
     currentStatus,
-    rawLlvmOutput: llmOutput,
+    rawLlmOutput: llmOutput,
   };
 }

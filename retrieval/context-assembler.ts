@@ -10,7 +10,7 @@
  * 工作记忆是状态层（跟随对话轮次变化）。
  */
 
-import type { MemorySearchResult, UserProfile } from '../types';
+import type { MemorySearchResult } from '../types';
 
 // ============================================================
 // 类型

@@ -1,0 +1,21 @@
+{
+  "name": "user-modeling-context-management",
+  "version": "0.1.0",
+  "description": "User modeling pipeline + global context assembly for LLM context injection",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "segment": "^0.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "notes": {
+    "segment": "Optional Chinese tokenizer for keyword extraction. Falls back to regex if not installed.",
+    "fetch": "Built into Node 18+. No polyfill needed.",
+    "supabase": "Bring your own @supabase/supabase-js client. The pipeline accepts any object matching the SupabaseClient interface in retrieval/hybrid-search.ts."
+  }
+}

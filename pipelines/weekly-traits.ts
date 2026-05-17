@@ -13,7 +13,7 @@
  *   - 聚焦于"这个人是谁"而非"这个人在做什么"
  */
 
-import type { PipelineConfig } from '../types';
+import { callDeepSeek } from './llm-client';
 
 // ============================================================
 // Prompt 模板
@@ -54,12 +54,11 @@ interface InternalCapsuleRecord {
   significance: number;
   supporting_quotes?: string[];
   created_at: string;
-  character_id?: string;
 }
 
 export interface WeeklyTraitsOutput {
   patternLayer: string;
-  rawLlvmOutput: string;
+  rawLlmOutput: string;
 }
 
 // ============================================================
@@ -84,7 +83,7 @@ function buildTraitsHistoryContent(
         : '';
 
     parts.push(
-      `【内在信息 ${index + 1}】${ts}\n角色: ${info.character_id || 'default'}\n重要性: ${info.significance}/10\n标签: ${tags}\n内容: ${info.content}\n支撑原话: ${quotes}`,
+      `【内在信息 ${index + 1}】${ts}\n重要性: ${info.significance}/10\n标签: ${tags}\n内容: ${info.content}\n支撑原话: ${quotes}`,
     );
   });
 
@@ -92,51 +91,11 @@ function buildTraitsHistoryContent(
 }
 
 // ============================================================
-// LLM 调用
-// ============================================================
-
-async function callDeepSeek(
-  prompt: string,
-  apiKey: string,
-  model: string,
-): Promise<string | null> {
-  try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        stream: false,
-        max_tokens: 4000,
-        temperature: 1,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`[weekly-traits] API error ${response.status}`);
-      return null;
-    }
-
-    const data = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    return data.choices?.[0]?.message?.content || null;
-  } catch (error) {
-    console.error('[weekly-traits] API call failed:', error);
-    return null;
-  }
-}
-
-// ============================================================
 // 标签解析
 // ============================================================
 
 function extractPatternLayer(content: string): string {
-  // 支持 <pattern_layer> 和 <pattern layer> 两种写法
+  // 支持 <pattern_layer> 和 <pattern layer> 两种写法（LLM 有时输出带空格的变体）
   const patterns = [
     /<pattern_layer>([\s\S]*?)<\/pattern_layer>/i,
     /<pattern layer>([\s\S]*?)<\/pattern layer>/i,
@@ -147,7 +106,6 @@ function extractPatternLayer(content: string): string {
     if (match) return match[1].trim();
   }
 
-  // 回退：返回全部内容
   return content.trim();
 }
 
@@ -184,11 +142,12 @@ export async function generateWeeklyTraits(
     .replace('{HISTORY}', historyContent)
     .replace('{PROFILE}', previousRawContent || '无历史画像');
 
-  const llmOutput = await callDeepSeek(prompt, apiKey, model);
-
-  if (!llmOutput) {
-    throw new Error('[weekly-traits] LLM call returned empty');
-  }
+  // temperature=1：特质生成需要表达上的多样性，避免每次输出模板化描述
+  // 与管线一（事实层，不设 temperature）不同——事实要精确，特质要有个性
+  const llmOutput = await callDeepSeek(prompt, apiKey, model, {
+    maxTokens: 4000,
+    temperature: 1,
+  });
 
   const patternLayer = extractPatternLayer(llmOutput);
 
@@ -198,6 +157,6 @@ export async function generateWeeklyTraits(
 
   return {
     patternLayer,
-    rawLlvmOutput: llmOutput,
+    rawLlmOutput: llmOutput,
   };
 }

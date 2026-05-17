@@ -1,6 +1,6 @@
-# User Modeling Pipeline
+# User Modeling & Global Context Management
 
-**给 LLM 一个持续更新的用户模型，比给它记忆更有效。**
+**给 LLM 一个持续更新的用户模型 + 全局上下文管理，比给它记忆更有效。**
 
 ---
 
@@ -59,9 +59,10 @@ retrieval/
   context-assembler.ts — 上下文组装器（画像 + 长期记忆 + 工作记忆）
 
 prompts/
-  capsule-extractor.md — 胶囊提取 prompt
+  capsule-extractor.md — 胶囊提取 prompt（含示例，供阅读和调试用）
   profile-generator.md — 画像生成 prompt
   traits-generator.md  — 特质生成 prompt
+  注：实际运行的 prompt 在各管线文件的常量中，.md 是带注释的参考版本
 
 types/
   index.ts             — 核心类型定义
@@ -112,9 +113,6 @@ types/
 
 ### 工作记忆与长期记忆割裂
 工作记忆（存入 Session）和长期记忆胶囊（存入 user_experiences/user_internal_info）是两套独立系统。工作记忆不参与胶囊生成，胶囊不参与工作记忆生成。两者唯一的共同点是都注入到对话上下文。
-
-### 管线三（原则与能力）未接入
-原始项目中有 `user-abilities-service.ts`，其设计的产出是 `principles_layer` 和 `abilities_layer` 两个字段，但 `user_profiles` 表中从未添加对应的列。这不是一个 cron 配置问题——是 schema 没做完。要接入管线三，需要先在 `user_profiles` 表中加这两个 TEXT 列，再补一条 cron 入口。
 
 ## 依赖
 
