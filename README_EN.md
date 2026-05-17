@@ -98,7 +98,7 @@ Entity matching (ILIKE exact matching on keywords in topic_tag and narrative) ge
 
 The user profile sits at Layer 1 (the first static block after the System Prompt), injected in full, never selectively retrieved on demand.
 
-The reasoning: the LLM needs a complete user model to make good judgments. Selective injection ("only inject the relevant parts") assumes the system knows which parts are relevant — but determining relevance itself requires understanding the user. That's a circular dependency.
+The reasoning: the LLM needs a complete user model to make good judgments. Full injection also eliminates the need for an intent recognition layer and multi-step API calls. It's also more cache-friendly.
 
 ## Dependencies
 
